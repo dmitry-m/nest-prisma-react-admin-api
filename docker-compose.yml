@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  nest-api:
+    container_name: nest-api
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: production
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 2999:2999
+    command: npm run dev
+    env_file:
+      - .env
+    networks:
+      - webnet
+    restart: unless-stopped
+    depends_on:
+      - postgres
+  postgres:
+    container_name: postgres
+    image: postgres:14
+    networks:
+      - webnet
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+networks:
+  webnet:
+volumes:
+  pgdata:
