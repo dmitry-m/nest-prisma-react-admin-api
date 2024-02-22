@@ -92,6 +92,6 @@ export const PrismaQuery = createParamDecorator((data: unknown, ctx: ExecutionCo
     }
   }
 
-  console.log({ prismaQuery });
+  // console.log({ prismaQuery });
   return prismaQuery;
 });

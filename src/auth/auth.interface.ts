@@ -10,6 +10,6 @@ export type TypeRole = "admin" | "user" | undefined;
 //   };
 // }
 
-export interface AuthInterface extends User {
+export interface AuthInterface extends Omit<User, "password"> {
   accessToken: string;
 }

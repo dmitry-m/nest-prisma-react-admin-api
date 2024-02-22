@@ -10,7 +10,8 @@ export class OnlyAdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<{ user: UserModel }>();
     const { user } = request;
-    console.log({ user });
+    console.log("------------------");
+    // console.log({ user });
 
     if (!user.isAdmin) throw new ForbiddenException("You have no rights!");
 

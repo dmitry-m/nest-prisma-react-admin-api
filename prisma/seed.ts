@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { compare, genSalt, hash } from "bcryptjs";
+
 import generateData from "data-generator-retail";
 
 const prisma = new PrismaClient();
@@ -37,25 +38,27 @@ async function main() {
 
   const data = generateData({ serializeDate: true });
   console.log({ data });
-  const customers = data.customers.map((c) => {
-    delete c.id;
-    c.stateAbbr = c.stateAbbr ? c.stateAbbr : "";
-    if (!c.birthday) delete c.birthday;
-    if (!c.latest_purchase) delete c.latest_purchase;
-    return c;
-  });
+  const customers = data.customers.map(
+    (c: { id: any; stateAbbr: any; birthday: any; latest_purchase: any }) => {
+      delete c.id;
+      c.stateAbbr = c.stateAbbr ? c.stateAbbr : "";
+      if (!c.birthday) delete c.birthday;
+      if (!c.latest_purchase) delete c.latest_purchase;
+      return c;
+    },
+  );
 
-  const categories = data.categories.map((c) => {
-    delete c.id;
-    return c;
-  });
-
-  const products = data.products.map((c) => {
+  const categories = data.categories.map((c: { id: any }) => {
     delete c.id;
     return c;
   });
 
-  const commands = data.commands.map((c) => {
+  const products = data.products.map((c: { id: any }) => {
+    delete c.id;
+    return c;
+  });
+
+  const commands = data.commands.map((c: { id: any; status: string }) => {
     delete c.id;
     c.status = c.status
       ? c.status === "cancelled"
@@ -66,12 +69,12 @@ async function main() {
     return c;
   });
 
-  const invoices = data.invoices.map((c) => {
+  const invoices = data.invoices.map((c: { id: any }) => {
     delete c.id;
     return c;
   });
 
-  const reviews = data.reviews.map((c) => {
+  const reviews = data.reviews.map((c: { id: any; status: string }) => {
     delete c.id;
     c.status = c.status ? c.status.toUpperCase() : "PENDING";
     return c;

@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 
+import { QueryForCommandsPrisma } from "./commands.interface";
 import { CommandsService } from "./commands.service";
 import { CreateCommandDto } from "./dto/create-command.dto";
 import { UpdateCommandDto } from "./dto/update-command.dto";
@@ -35,10 +36,10 @@ export class CommandsController {
 
   @Get()
   @Header("Access-Control-Expose-Headers", "Content-Range")
-  async findMany(@Res() res: Response, @PrismaQuery() prismaQuery) {
+  async findMany(@Res() res: Response, @PrismaQuery() prismaQuery: QueryForCommandsPrisma) {
     console.log("commands");
     const { count, data } = await this.commandsService.findMany(prismaQuery);
-    console.log({ data });
+    // console.log({ data });
     res.header("Content-Range", `${count}`);
     res.send(data);
   }
@@ -49,11 +50,11 @@ export class CommandsController {
     return match;
   }
 
-  // @Patch(':id')
+  // @Patch(":id")
   // async update(
-  //   @Param('id') id: string,
+  //   @Param("id") id: string,
   //   @Body() updateCommandDto: UpdateCommandDto,
-  //   @Query('crudQuery') crudQuery: string,
+  //   @Query("crudQuery") crudQuery: string,
   // ) {
   //   const updated = await this.commandsService.update(id, updateCommandDto, {
   //     crudQuery,
@@ -61,8 +62,8 @@ export class CommandsController {
   //   return updated;
   // }
 
-  // @Delete(':id')
-  // async remove(@Param('id') id: string, @Query('crudQuery') crudQuery: string) {
+  // @Delete(":id")
+  // async remove(@Param("id") id: string, @Query("crudQuery") crudQuery: string) {
   //   return this.commandsService.remove(id, { crudQuery });
   // }
 }

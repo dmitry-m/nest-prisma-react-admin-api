@@ -25,7 +25,11 @@ import { User } from "../user/user.entity";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {}
+  private expires: number;
+
+  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
+    this.expires = this.config.get("REFRESH_TOKEN_DAYS") * 24 * 60 * 60 * 1000;
+  }
 
   @Post("login")
   @UseGuards(LocalAuthGuard)
@@ -37,9 +41,8 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthInterface> {
     const { refreshToken, ...auth } = await this.authService.authenticate(user);
-    const expires = this.config.get("REFRESH_TOKEN_DAYS") * 24 * 60 * 60 * 1000;
     response.cookie("refreshToken", refreshToken, {
-      expires: new Date(Date.now() + expires),
+      expires: new Date(Date.now() + this.expires),
       httpOnly: true,
     });
 
@@ -48,13 +51,32 @@ export class AuthController {
 
   @Post("signup")
   @HttpCode(200)
-  async signup(@Body() dto: AuthDto): Promise<AuthInterface> {
+  async signup(
+    @Body() dto: AuthDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthInterface> {
     try {
-      const user = await this.authService.signup(dto);
-      return user;
+      console.log({ dto });
+      const { refreshToken, ...auth } = await this.authService.signup(dto);
+      response.cookie("refreshToken", refreshToken, {
+        expires: new Date(Date.now() + this.expires),
+        httpOnly: true,
+      });
+      console.log("signup controller");
+      console.log({ auth });
+      return auth;
     } catch (error) {
       throw new ConflictException("User with this email is already registered");
     }
+  }
+
+  @Get("logout")
+  @HttpCode(200)
+  logout(@Res({ passthrough: true }) response: Response): void {
+    response.cookie("refreshToken", "", {
+      expires: new Date(),
+      httpOnly: true,
+    });
   }
 
   @Get("token")
@@ -65,13 +87,15 @@ export class AuthController {
   ): Promise<AuthInterface> {
     try {
       const { refreshToken: oldToken } = request.cookies as { refreshToken: string };
+      // переписать метод, чтобы отдавал только токены
       const { refreshToken, ...auth } = await this.authService.reNewAuth(oldToken);
       const expires = this.config.get("REFRESH_TOKEN_DAYS") * 24 * 60 * 60 * 1000;
       response.cookie("refreshToken", refreshToken, {
         expires: new Date(Date.now() + expires),
         httpOnly: true,
       });
-
+      console.log({ auth });
+      console.log("+++++++++++++++++++++++++++");
       return auth;
     } catch (error) {
       throw new UnauthorizedException("Invalid token or expired");
