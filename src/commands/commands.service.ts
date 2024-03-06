@@ -10,23 +10,13 @@ export class CommandsService {
   constructor(private prismaService: PrismaService) {}
 
   async findMany(prismaQuery: QueryForCommandsPrisma) {
-    // const [count, data] = await this.prismaService.$transaction([
-    //   this.prismaService.commands.count({ where: prismaQuery.where }),
-    //   this.prismaService.commands.findMany(prismaQuery),
-    // ]);
-
-    // return { count, data };
     const commandsQuery: Prisma.CommandsFindManyArgs = prismaQuery;
 
     if (prismaQuery.where.q) {
       const { q, ...prismaWhere } = prismaQuery.where;
       commandsQuery.where = { ...prismaWhere, reference: q };
     }
-
-    if (prismaQuery.orderBy[0]?.customer_id) {
-      commandsQuery.orderBy[0] = { id: prismaQuery.orderBy[0].customer_id };
-    }
-
+    console.log({ where: commandsQuery.where });
     const [count, data] = await this.prismaService.$transaction([
       this.prismaService.commands.count({ where: commandsQuery.where }),
       this.prismaService.commands.findMany(commandsQuery),

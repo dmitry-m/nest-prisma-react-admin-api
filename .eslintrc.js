@@ -45,7 +45,6 @@ module.exports = {
         trailingComma: "all",
         bracketSpacing: true,
         printWidth: 100,
-        endOfLine: "lf",
         tabWidth: 2,
       },
     ],

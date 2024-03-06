@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Prisma } from "@prisma/client";
 import { compare, genSalt, hash } from "bcryptjs";
 import { Repository, ILike } from "typeorm";
 
 import { UpdatePassword } from "./dto/password.dto";
 import { UpdateDto } from "./dto/update.dto";
 import { User } from "./user.entity";
+import { QueryForUsersPrisma } from "./user.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -63,4 +65,46 @@ export class UserService {
   async delete(id: number): Promise<User> {
     return this.prismaService.users.delete({ where: { id } });
   }
+
+  // public async create(createCustomerDto: CreateCustomerDto) {
+  //   return this.prismaService.users.create({
+  //     data: { ...createCustomerDto },
+  //   });
+  // }
+
+  async findMany(prismaQuery: QueryForUsersPrisma) {
+    console.log({ prismaQuery });
+    const usersQuery: Prisma.UsersFindManyArgs = prismaQuery;
+
+    if (prismaQuery.where.q) {
+      const { q, ...prismaWhere } = prismaQuery.where;
+      usersQuery.where = { ...prismaWhere, OR: [{ email: q }, { fullName: q }] };
+    }
+
+    const [count, data] = await this.prismaService.$transaction([
+      this.prismaService.users.count({ where: usersQuery.where }),
+      this.prismaService.users.findMany(usersQuery),
+    ]);
+
+    return { count, data };
+  }
+
+  async findById(id: string) {
+    const data = await this.prismaService.users.findFirst({
+      where: { id: +id },
+    });
+
+    return data;
+  }
+
+  // async update(id: number, updateCustomerDto: UpdateCustomerDto) {
+  //   return this.prismaService.users.update({
+  //     where: { id },
+  //     data: updateCustomerDto,
+  //   });
+  // }
+
+  // remove(id: number) {
+  //   return this.prismaService.users.delete({ where: { id } });
+  // }
 }
