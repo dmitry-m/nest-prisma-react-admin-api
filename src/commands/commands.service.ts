@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
 import { QueryForCommandsPrisma } from "./commands.interface";
+import { UpdateCommandDto } from "./dto/update-command.dto";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -31,5 +32,12 @@ export class CommandsService {
     });
 
     return data;
+  }
+
+  async update(id: number, updateCommandsDto: UpdateCommandDto) {
+    return this.prismaService.commands.update({
+      where: { id },
+      data: updateCommandsDto,
+    });
   }
 }

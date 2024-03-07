@@ -62,10 +62,6 @@ export class UserService {
     return this.prismaService.users.count();
   }
 
-  async delete(id: number): Promise<User> {
-    return this.prismaService.users.delete({ where: { id } });
-  }
-
   // public async create(createCustomerDto: CreateCustomerDto) {
   //   return this.prismaService.users.create({
   //     data: { ...createCustomerDto },
@@ -104,7 +100,7 @@ export class UserService {
   //   });
   // }
 
-  // remove(id: number) {
-  //   return this.prismaService.users.delete({ where: { id } });
-  // }
+  remove(id: number) {
+    return this.prismaService.users.delete({ where: { id } });
+  }
 }

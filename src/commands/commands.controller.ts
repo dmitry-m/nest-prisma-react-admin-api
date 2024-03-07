@@ -9,6 +9,7 @@ import {
   Query,
   Header,
   Res,
+  Put,
 } from "@nestjs/common";
 import { Response } from "express";
 
@@ -16,6 +17,8 @@ import { QueryForCommandsPrisma } from "./commands.interface";
 import { CommandsService } from "./commands.service";
 import { CreateCommandDto } from "./dto/create-command.dto";
 import { UpdateCommandDto } from "./dto/update-command.dto";
+
+import { Auth } from "src/auth/decorators/auth.decorator";
 
 import { PrismaQuery } from "../prisma/prisma.decorator";
 
@@ -50,17 +53,12 @@ export class CommandsController {
     return match;
   }
 
-  // @Patch(":id")
-  // async update(
-  //   @Param("id") id: string,
-  //   @Body() updateCommandDto: UpdateCommandDto,
-  //   @Query("crudQuery") crudQuery: string,
-  // ) {
-  //   const updated = await this.commandsService.update(id, updateCommandDto, {
-  //     crudQuery,
-  //   });
-  //   return updated;
-  // }
+  @Put(":id")
+  @Auth("admin")
+  async update(@Param("id") id: string, @Body() updateCommandDto: UpdateCommandDto) {
+    const updated = await this.commandsService.update(+id, updateCommandDto);
+    return updated;
+  }
 
   // @Delete(":id")
   // async remove(@Param("id") id: string, @Query("crudQuery") crudQuery: string) {

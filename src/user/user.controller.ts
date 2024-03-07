@@ -79,12 +79,11 @@ export class UserController {
   @HttpCode(204)
   async deleteUser(
     @Param("id", ParseIntPipe) id: number,
-
     @UserParam("id") adminId: number,
   ): Promise<boolean> {
     if (id === adminId) throw new ConflictException("You can't remove yourself");
 
-    const deleted = await this.userService.delete(id);
+    const deleted = await this.userService.remove(id);
 
     if (!deleted) throw new NotFoundException("User not found");
 
@@ -136,10 +135,10 @@ export class UserController {
   //   return created;
   // }
 
-  // @Delete(":id")
-  // @Auth("admin")
-  // @ApiOkResponse({ type: UsersEntity })
-  // remove(@Param("id") id: string) {
-  //   return this.userService.remove(+id);
-  // }
+  @Delete(":id")
+  @Auth("admin")
+  @ApiOkResponse({ type: UsersEntity })
+  remove(@Param("id") id: string) {
+    return this.userService.remove(+id);
+  }
 }

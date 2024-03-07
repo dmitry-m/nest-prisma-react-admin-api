@@ -1,5 +1,3 @@
-import { PartialType } from "@nestjs/swagger";
+import { Prisma } from "@prisma/client";
 
-import { CreateCommandDto } from "./create-command.dto";
-
-export class UpdateCommandDto extends PartialType(CreateCommandDto) {}
+export type UpdateCommandDto = Prisma.CommandsUpdateInput;
