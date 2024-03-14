@@ -17,7 +17,6 @@ import { Request, Response } from "express";
 import { AuthInterface } from "./auth.interface";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
-import { SwaggerLoginDto } from "./dto/swagger-login.dto";
 import { LocalAuthGuard } from "./guards/local.guard";
 
 import { UserParam } from "../user/decorators/user.decorator";
@@ -33,7 +32,7 @@ export class AuthController {
 
   @Post("login")
   @UseGuards(LocalAuthGuard)
-  @ApiBody({ type: SwaggerLoginDto })
+  @ApiBody({ type: AuthDto })
   @ApiOkResponse({ description: "Tokens" })
   @HttpCode(200)
   async login(
@@ -56,14 +55,12 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthInterface> {
     try {
-      console.log({ dto });
       const { refreshToken, ...auth } = await this.authService.signup(dto);
       response.cookie("refreshToken", refreshToken, {
         expires: new Date(Date.now() + this.expires),
         httpOnly: true,
       });
-      console.log("signup controller");
-      console.log({ auth });
+
       return auth;
     } catch (error) {
       throw new ConflictException("User with this email is already registered");

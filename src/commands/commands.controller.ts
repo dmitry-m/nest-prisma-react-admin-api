@@ -18,9 +18,8 @@ import { CommandsService } from "./commands.service";
 import { CreateCommandDto } from "./dto/create-command.dto";
 import { UpdateCommandDto } from "./dto/update-command.dto";
 
-import { Auth } from "src/auth/decorators/auth.decorator";
-
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { Auth } from "../auth/decorators/auth.decorator";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @Controller("commands")
 export class CommandsController {
@@ -39,7 +38,7 @@ export class CommandsController {
 
   @Get()
   @Header("Access-Control-Expose-Headers", "Content-Range")
-  async findMany(@Res() res: Response, @PrismaQuery() prismaQuery: QueryForCommandsPrisma) {
+  async findMany(@Res() res: Response, @UrlToPrismaQuery() prismaQuery: QueryForCommandsPrisma) {
     console.log("commands");
     const { count, data } = await this.commandsService.findMany(prismaQuery);
     // console.log({ data });

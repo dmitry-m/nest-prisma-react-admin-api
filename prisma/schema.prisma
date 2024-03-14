@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,12 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator prismaClassGenerator {
+  provider = "prisma-class-generator"
+  dryRun   = false
+  output   = "../src/prisma/classes"
 }
 
 model Users {
@@ -21,34 +24,40 @@ model Users {
 }
 
 model Customers {
-  id              Int      @id @default(autoincrement())
-  first_name      String?
-  last_name       String?
-  email           String?
-  address         String?
-  zipcode         String?
-  city            String?
-  avatar          String?
-  birthday        DateTime @default(now())
-  first_seen      DateTime @default(now())
-  last_seen       DateTime @default(now())
-  has_ordered     Boolean
-  stateAbbr       String?
-  latest_purchase DateTime @default(now())
-  has_newsletter  Boolean
-  groups          String[]
-  nb_commands     Int
-  total_spent     Int
+  id              Int        @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  email           String     @unique
+  password        String     @default("")
+  address         String?    @default("")
+  zipcode         String?    @default("")
+  city            String?    @default("")
+  avatar          String?    @default("")
+  birthday        DateTime?  @default(now())
+  first_seen      DateTime?  @default(now())
+  last_seen       DateTime?  @default(now())
+  has_ordered     Boolean?   @default(false)
+  stateAbbr       String?    @default("")
+  latest_purchase DateTime?
+  has_newsletter  Boolean?   @default(true)
+  groups          String[]   @default([])
+  nb_commands     Int?       @default(0)
+  total_spent     Int?       @default(0)
+  commands        Commands[]
+  invoices        Invoices[]
+  reviews         Reviews[]
 }
 
 model Categories {
-  id   Int     @id @default(autoincrement())
-  name String?
+  id       Int        @id @default(autoincrement())
+  name     String?
+  products Products[]
 }
 
 model Products {
-  id          Int     @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   category_id Int
+  category    Categories @relation(fields: [category_id], references: [id])
   reference   String?
   width       Int
   height      Int
@@ -58,6 +67,7 @@ model Products {
   description String?
   stock       Int
   sales       Int
+  Reviews     Reviews[]
 }
 
 model Commands {
@@ -65,6 +75,7 @@ model Commands {
   reference      String?
   date           DateTime       @default(now())
   customer_id    Int
+  customer       Customers      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   basket         Json?
   total_ex_taxes Int
   delivery_fees  Int
@@ -73,13 +84,17 @@ model Commands {
   total          Int
   status         CommandsStatus @default(ORDERED)
   returned       Boolean
+  invoice        Invoices?
+  Reviews        Reviews[]
 }
 
 model Invoices {
-  id             Int      @id @default(autoincrement())
-  date           DateTime @default(now())
-  command_id     Int
-  customer_id    Int
+  id             Int       @id @default(autoincrement())
+  date           DateTime  @default(now())
+  command_id     Int       @unique
+  command        Commands  @relation(fields: [command_id], references: [id])
+  customer_id    Int       @unique
+  customer       Customers @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   total_ex_taxes Int
   delivery_fees  Int
   tax_rate       Int
@@ -91,9 +106,12 @@ model Reviews {
   id          Int          @id @default(autoincrement())
   date        DateTime     @default(now())
   status      ReviewStatus @default(PENDING)
-  command_id  Int
-  product_id  Int
-  customer_id Int
+  command_id  Int          @unique
+  command     Commands     @relation(fields: [command_id], references: [id])
+  product_id  Int          @unique
+  product     Products     @relation(fields: [product_id], references: [id])
+  customer_id Int          @unique
+  customer    Customers    @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   rating      Int
   comment     String?
 }

@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
-import { QueryForCustomersPrisma } from "./customers.interface";
-import { CreateCustomerDto } from "./dto/create-customer.dto";
-import { UpdateCustomerDto } from "./dto/update-customer.dto";
+import { CustomersPrismaQuery } from "./customers.interface";
+import { CreateCustomerDto } from "./dto/create-user.dto";
+import { UpdateCustomerDto } from "./dto/update-user.dto";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -12,21 +12,24 @@ export class CustomersService {
   constructor(private prismaService: PrismaService) {}
 
   public async create(createCustomerDto: CreateCustomerDto) {
-    return this.prismaService.customers.create({
-      data: { ...createCustomerDto, birthday: new Date(createCustomerDto.birthday) },
-    });
+    return this.prismaService.customers.create({ data: createCustomerDto });
   }
 
-  async findMany(prismaQuery: QueryForCustomersPrisma) {
+  async findMany(prismaQuery: CustomersPrismaQuery) {
     const customersQuery: Prisma.CustomersFindManyArgs = prismaQuery;
 
-    if (prismaQuery.where.q) {
-      const { q, ...prismaWhere } = prismaQuery.where;
-      customersQuery.where = { ...prismaWhere, OR: [{ last_name: q }, { first_name: q }] };
-    }
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      customersQuery.where = {
+        ...prismaWhere,
+        OR: [
+          { last_name: { contains: search, mode: "insensitive" } },
+          { last_name: { in: search.split(" "), mode: "insensitive" } },
 
-    if (prismaQuery.orderBy[0]?.customer_id) {
-      customersQuery.orderBy[0] = { id: prismaQuery.orderBy[0].customer_id };
+          { first_name: { contains: search, mode: "insensitive" } },
+          { first_name: { in: search.split(" "), mode: "insensitive" } },
+        ],
+      };
     }
 
     const [count, data] = await this.prismaService.$transaction([
@@ -37,9 +40,9 @@ export class CustomersService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.customers.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;

@@ -20,23 +20,24 @@ CREATE TABLE "Users" (
 -- CreateTable
 CREATE TABLE "Customers" (
     "id" SERIAL NOT NULL,
-    "first_name" TEXT,
-    "last_name" TEXT,
-    "email" TEXT,
-    "address" TEXT,
-    "zipcode" TEXT,
-    "city" TEXT,
-    "avatar" TEXT,
-    "birthday" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "first_seen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "last_seen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "has_ordered" BOOLEAN NOT NULL,
-    "stateAbbr" TEXT,
-    "latest_purchase" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "has_newsletter" BOOLEAN NOT NULL,
-    "groups" TEXT[],
-    "nb_commands" INTEGER NOT NULL,
-    "total_spent" INTEGER NOT NULL,
+    "first_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL DEFAULT '',
+    "address" TEXT DEFAULT '',
+    "zipcode" TEXT DEFAULT '',
+    "city" TEXT DEFAULT '',
+    "avatar" TEXT DEFAULT '',
+    "birthday" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "first_seen" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "last_seen" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "has_ordered" BOOLEAN DEFAULT false,
+    "stateAbbr" TEXT DEFAULT '',
+    "latest_purchase" TIMESTAMP(3),
+    "has_newsletter" BOOLEAN DEFAULT true,
+    "groups" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "nb_commands" INTEGER DEFAULT 0,
+    "total_spent" INTEGER DEFAULT 0,
 
     CONSTRAINT "Customers_pkey" PRIMARY KEY ("id")
 );
@@ -115,3 +116,42 @@ CREATE TABLE "Reviews" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Users_email_key" ON "Users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Customers_email_key" ON "Customers"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Invoices_command_id_key" ON "Invoices"("command_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Invoices_customer_id_key" ON "Invoices"("customer_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Reviews_command_id_key" ON "Reviews"("command_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Reviews_product_id_key" ON "Reviews"("product_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Reviews_customer_id_key" ON "Reviews"("customer_id");
+
+-- AddForeignKey
+ALTER TABLE "Products" ADD CONSTRAINT "Products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Commands" ADD CONSTRAINT "Commands_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "Customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invoices" ADD CONSTRAINT "Invoices_command_id_fkey" FOREIGN KEY ("command_id") REFERENCES "Commands"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invoices" ADD CONSTRAINT "Invoices_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "Customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reviews" ADD CONSTRAINT "Reviews_command_id_fkey" FOREIGN KEY ("command_id") REFERENCES "Commands"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reviews" ADD CONSTRAINT "Reviews_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "Products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reviews" ADD CONSTRAINT "Reviews_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "Customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;

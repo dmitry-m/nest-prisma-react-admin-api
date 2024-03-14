@@ -20,7 +20,7 @@ function returnNumIfValid(value: FilterValue): FilterValue {
     : value;
 }
 
-export const PrismaQuery = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+export const UrlToPrismaQuery = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request: Request = ctx.switchToHttp().getRequest();
   const { range, sort, filter } = request.query;
   let skip = 0;
@@ -50,34 +50,6 @@ export const PrismaQuery = createParamDecorator((data: unknown, ctx: ExecutionCo
       const filterKeys = Object.keys(filterObj);
       const where: FilterMap = {};
 
-      // if (filterKeys.length !== 0) {
-      //   for (const key of filterKeys) {
-      //     let filterValue = filterObj[key];
-      //     if (typeof filterValue === "string") {
-      //       const date = new Date(filterValue);
-      //       if (!Number.isNaN(date.getTime())) filterValue = date;
-      //     }
-
-      //     const keyStrings = key.split("_");
-      //     const sign = keyStrings[keyStrings.length - 1];
-
-      //     if (sign === "gte" || sign === "gt" || sign === "lt" || sign === "lte") {
-      //       const slicedKey = keyStrings.slice(0, -1).join("_");
-      //       where[slicedKey] = { [sign]: filterValue };
-      //     } else if (Array.isArray(filterValue)) {
-      //       where[key] = { in: filterValue };
-      //     } else if (key === "status") {
-      //       where[key] = (filterValue as string).toUpperCase();
-      //     } else if (key === "groups") {
-      //       where[key] = { has: filterValue };
-      //     } else if (key === "q") {
-      //       where[key] = { contains: filterValue, mode: "insensitive" };
-      //     } else {
-      //       where[key] = filterValue;
-      //     }
-      //   }
-      // }
-
       if (filterKeys.length !== 0) {
         for (const key of filterKeys) {
           let filterValue: FilterValue = filterObj[key];
@@ -103,8 +75,8 @@ export const PrismaQuery = createParamDecorator((data: unknown, ctx: ExecutionCo
             where[key] = (filterValue as string).toUpperCase();
           } else if (key === "groups") {
             where[key] = { has: filterValue };
-          } else if (key === "q") {
-            where[key] = { contains: filterValue, mode: "insensitive" };
+          } else if (key === "search") {
+            where[key] = filterValue;
           } else {
             where[key] = returnNumIfValid(filterValue);
           }

@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
-import { QueryForCategoriesPrisma } from "./categories.interface";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
+import { CategoriesPrismaQuery } from "./categories.interface";
+import { Categories } from "./dto/categories";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -11,22 +10,19 @@ import { PrismaService } from "../prisma/prisma.service";
 export class CategoriesService {
   constructor(private prismaService: PrismaService) {}
 
-  public async create(createCategoryDto: CreateCategoryDto) {
-    return this.prismaService.categories.create({
-      data: createCategoryDto,
-    });
+  public async create(createCategoryDto: Categories) {
+    const { id, ...category } = createCategoryDto;
+    return this.prismaService.categories.create({ data: category });
   }
 
-  async findMany(prismaQuery: QueryForCategoriesPrisma) {
+  async findMany(prismaQuery: CategoriesPrismaQuery) {
     const categoriesQuery: Prisma.CategoriesFindManyArgs = prismaQuery;
 
-    // if (prismaQuery.where.q) {
-    //   const { q, ...prismaWhere } = prismaQuery.where;
-    //   categoriesQuery.where = { ...prismaWhere, OR: [{ last_name: q }, { first_name: q }] };
-    // }
-
-    if (prismaQuery.orderBy[0]?.category_id) {
-      categoriesQuery.orderBy[0] = { id: prismaQuery.orderBy[0].category_id };
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      categoriesQuery.where = {
+        ...prismaWhere,
+      };
     }
 
     const [count, data] = await this.prismaService.$transaction([
@@ -37,15 +33,15 @@ export class CategoriesService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.categories.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: number, updateCategoryDto: Categories) {
     return this.prismaService.categories.update({
       where: { id },
       data: updateCategoryDto,

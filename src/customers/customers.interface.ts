@@ -1,8 +1,15 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Prisma } from "@prisma/client";
 
-export interface QueryForCustomersPrisma extends Prisma.CustomersFindManyArgs {
+import { CreateCustomerDto } from "./dto/create-user.dto";
+
+export interface CustomersPrismaQuery extends Prisma.CustomersFindManyArgs {
   where: Prisma.CustomersWhereInput & {
-    q?: Prisma.StringNullableFilter<"Customers">;
+    search?: string;
   };
-  orderBy: Prisma.CustomersOrderByWithRelationInput & { customer_id: string }[];
+}
+
+export class CustomerEntity extends CreateCustomerDto {
+  @ApiProperty({ type: Number })
+  id: number;
 }

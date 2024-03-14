@@ -1,45 +1,68 @@
-import { Controller, Get, Post, Body, Param, Delete, Header, Res, Put, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Header,
+  Res,
+  Put,
+  HttpCode,
+  ParseIntPipe,
+  NotFoundException,
+  ConflictException,
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
+  ApiBody,
   ApiOkResponse,
   ApiQuery,
   ApiTags,
+  ApiCreatedResponse,
 } from "@nestjs/swagger";
-import { Request, Response } from "express";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { Response } from "express";
 
-import { CustomersEntity } from "./customers.entity";
-import { QueryForCustomersPrisma } from "./customers.interface";
+import { CustomerEntity, CustomersPrismaQuery } from "./customers.interface";
 import { CustomersService } from "./customers.service";
-import { CreateCustomerDto } from "./dto/create-customer.dto";
+import { CreateCustomerDto } from "./dto/create-user.dto";
+import { CustomersResponse } from "./dto/customers";
+import { UpdateCustomerDto } from "./dto/update-user.dto";
 
 import { Auth } from "../auth/decorators/auth.decorator";
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { Customers } from "../prisma/classes/customers";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @ApiBearerAuth()
-@ApiTags("customers")
+@ApiTags("Customers")
 @Controller("customers")
 export class CustomersController {
   constructor(private customersService: CustomersService) {}
 
   @Post()
   @Auth("admin")
-  @ApiCreatedResponse({ type: CustomersEntity })
-  @ApiQuery({ name: "crudQuery", required: false })
-  async create(@Body() createCustomerDto: CreateCustomerDto) {
-    const created = await this.customersService.create(createCustomerDto);
-    return created;
+  @HttpCode(201)
+  @ApiCreatedResponse({ type: CustomerEntity })
+  @ApiBody({ type: CreateCustomerDto })
+  async create(@Body() customerDto: CreateCustomerDto) {
+    try {
+      const created = await this.customersService.create(customerDto);
+      return created;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new ConflictException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+      }
+      throw error;
+    }
   }
 
   @Get()
   @Auth("admin")
-  @ApiOkResponse({ type: CustomersEntity, isArray: true })
+  @ApiOkResponse({ type: Customers, isArray: true })
   @Header("Access-Control-Expose-Headers", "Content-Range")
-  async findMany(
-    @Res() res: Response,
-    @Req() req: Request,
-    @PrismaQuery() prismaQuery: QueryForCustomersPrisma,
-  ) {
+  @ApiQuery({ name: "customersQuery", required: false })
+  async findMany(@Res() res: Response, @UrlToPrismaQuery() prismaQuery: CustomersPrismaQuery) {
     const { count, data } = await this.customersService.findMany(prismaQuery);
     res.header("Content-Range", `${count}`);
     res.send(data);
@@ -47,25 +70,37 @@ export class CustomersController {
 
   @Get(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: CustomersEntity })
-  @ApiQuery({ name: "crudQuery", required: false })
-  async findOne(@Param("id") id: string) {
+  @ApiOkResponse({ type: Customers })
+  async findOne(@Param("id", ParseIntPipe) id: number) {
     const match = await this.customersService.findById(id);
     return match;
   }
 
   @Put(":id")
   @Auth("admin")
-  @ApiCreatedResponse({ type: CustomersEntity })
-  async update(@Param("id") id: string, @Body() createCustomerDto: CreateCustomerDto) {
-    const created = await this.customersService.update(+id, createCustomerDto);
-    return created;
+  @ApiOkResponse({ type: CustomersResponse })
+  @ApiBody({ type: UpdateCustomerDto })
+  async update(@Param("id", ParseIntPipe) id: number, @Body() customerDto: UpdateCustomerDto) {
+    try {
+      const updated = await this.customersService.update(id, customerDto);
+      return updated;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new NotFoundException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+      }
+      throw error;
+    }
   }
 
   @Delete(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: CustomersEntity })
-  async remove(@Param("id") id: string) {
-    return this.customersService.remove(+id);
+  @ApiOkResponse({ type: CustomersResponse })
+  async remove(@Param("id", ParseIntPipe) id: number) {
+    try {
+      const deleted = await this.customersService.remove(id);
+      return deleted;
+    } catch (error) {
+      throw new NotFoundException("User not found");
+    }
   }
 }

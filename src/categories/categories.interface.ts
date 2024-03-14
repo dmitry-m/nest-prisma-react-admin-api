@@ -1,8 +1,7 @@
 import { Prisma } from "@prisma/client";
 
-export interface QueryForCategoriesPrisma extends Prisma.CategoriesFindManyArgs {
+export interface CategoriesPrismaQuery extends Prisma.CategoriesFindManyArgs {
   where: Prisma.CategoriesWhereInput & {
-    q?: Prisma.StringNullableFilter<"Categories">;
+    search?: string;
   };
-  orderBy: Prisma.CategoriesOrderByWithRelationInput & { category_id: string }[];
 }

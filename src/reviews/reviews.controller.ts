@@ -7,7 +7,7 @@ import { ReviewsEntity } from "./reviews.entity";
 import { QueryForReviewsPrisma } from "./reviews.interface";
 import { ReviewsService } from "./reviews.service";
 
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @Controller("reviews")
 export class ReviewsController {
@@ -27,7 +27,7 @@ export class ReviewsController {
   async findMany(
     @Res() res: Response,
     @Req() req: Request,
-    @PrismaQuery() prismaQuery: QueryForReviewsPrisma,
+    @UrlToPrismaQuery() prismaQuery: QueryForReviewsPrisma,
   ) {
     const { count, data } = await this.reviewsService.findMany(prismaQuery);
     res.header("Content-Range", `${count}`);

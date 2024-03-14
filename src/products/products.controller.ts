@@ -3,11 +3,12 @@ import { ApiCreatedResponse, ApiOkResponse, ApiQuery } from "@nestjs/swagger";
 import { Request, Response } from "express";
 
 import { CreateProductDto } from "./dto/create-product.dto";
+import { Products } from "./dto/products";
 import { ProductsEntity } from "./products.entity";
 import { QueryForProductsPrisma } from "./products.interface";
 import { ProductsService } from "./products.service";
 
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @Controller("products")
 export class ProductsController {
@@ -16,7 +17,7 @@ export class ProductsController {
   @Post()
   @ApiCreatedResponse({ type: ProductsEntity })
   @ApiQuery({ name: "crudQuery", required: false })
-  async create(@Body() createProductDto: CreateProductDto) {
+  async create(@Body() createProductDto: Products) {
     const created = await this.productsService.create(createProductDto);
     return created;
   }
@@ -27,7 +28,7 @@ export class ProductsController {
   async findMany(
     @Res() res: Response,
     @Req() req: Request,
-    @PrismaQuery() prismaQuery: QueryForProductsPrisma,
+    @UrlToPrismaQuery() prismaQuery: QueryForProductsPrisma,
   ) {
     const { count, data } = await this.productsService.findMany(prismaQuery);
     res.header("Content-Range", `${count}`);

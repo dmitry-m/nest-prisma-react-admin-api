@@ -1,13 +1,11 @@
 import { Logger, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_FILTER } from "@nestjs/core";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { AuthModule } from "./auth/auth.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { CommandsModule } from "./commands/commands.module";
 import { getTelegramConfig } from "./configs/telegram.config";
-import { getOrmOptions } from "./configs/typeOrm.config";
 import { CustomersModule } from "./customers/customers.module";
 import { AllExceptionsFilter } from "./filters/all-exception.filter";
 import { InvoicesModule } from "./invoices/invoices.module";
@@ -24,11 +22,6 @@ import { UserModule } from "./user/user.module";
       isGlobal: true,
     }),
     PrismaModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: getOrmOptions,
-    }),
     TelegramModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

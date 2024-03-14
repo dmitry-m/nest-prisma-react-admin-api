@@ -9,6 +9,7 @@ import * as cookieParser from "cookie-parser";
 import { join } from "path";
 
 import { AppModule } from "./app.module";
+import { PrismaModel } from "./prisma/classes";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -17,7 +18,7 @@ async function bootstrap(): Promise<void> {
 
   app.use(cookieParser());
   app.setGlobalPrefix("api");
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.setBaseViewsDir(join(__dirname, "../views"));
   app.setViewEngine("pug");
 
@@ -28,7 +29,9 @@ async function bootstrap(): Promise<void> {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document = SwaggerModule.createDocument(app, swaggerConfig, {
+    extraModels: [...PrismaModel.extraModels],
+  });
   SwaggerModule.setup("swagger", app, document);
 
   await app.listen(port);

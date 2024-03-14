@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
 import { Prisma } from "@prisma/client";
 import { compare, genSalt, hash } from "bcryptjs";
-import { Repository, ILike } from "typeorm";
 
+import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdatePassword } from "./dto/password.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 import { UpdateDto } from "./dto/update.dto";
 import { User } from "./user.entity";
 import { QueryForUsersPrisma } from "./user.interface";
@@ -13,10 +13,7 @@ import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private prismaService: PrismaService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   public async getAll(prismaQuery) {
     return this.prismaService.users.findMany(prismaQuery);
@@ -62,9 +59,9 @@ export class UserService {
     return this.prismaService.users.count();
   }
 
-  // public async create(createCustomerDto: CreateCustomerDto) {
+  // public async create(createUserDto: CreateUserDto) {
   //   return this.prismaService.users.create({
-  //     data: { ...createCustomerDto },
+  //     data: { ...createUserDto },
   //   });
   // }
 
@@ -93,12 +90,12 @@ export class UserService {
     return data;
   }
 
-  // async update(id: number, updateCustomerDto: UpdateCustomerDto) {
-  //   return this.prismaService.users.update({
-  //     where: { id },
-  //     data: updateCustomerDto,
-  //   });
-  // }
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    return this.prismaService.users.update({
+      where: { id },
+      data: updateUserDto,
+    });
+  }
 
   remove(id: number) {
     return this.prismaService.users.delete({ where: { id } });

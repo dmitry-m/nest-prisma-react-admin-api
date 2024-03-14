@@ -1,57 +1,87 @@
-import { Controller, Get, Post, Body, Param, Delete, Header, Res, Put, Req } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOkResponse, ApiQuery } from "@nestjs/swagger";
-import { Request, Response } from "express";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Header,
+  Res,
+  Put,
+  HttpCode,
+  ParseIntPipe,
+  NotFoundException,
+} from "@nestjs/common";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+  ApiCreatedResponse,
+} from "@nestjs/swagger";
+import { Response } from "express";
 
-import { CategoriesEntity } from "./categories.entity";
-import { QueryForCategoriesPrisma } from "./categories.interface";
+import { CategoriesPrismaQuery } from "./categories.interface";
 import { CategoriesService } from "./categories.service";
-import { CreateCategoryDto } from "./dto/create-category.dto";
+import { Categories } from "./dto/categories";
 
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { Auth } from "../auth/decorators/auth.decorator";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
+@ApiBearerAuth()
+@ApiTags("Categories")
 @Controller("categories")
 export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
 
   @Post()
-  @ApiCreatedResponse({ type: CategoriesEntity })
-  @ApiQuery({ name: "crudQuery", required: false })
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
-    const created = await this.categoriesService.create(createCategoryDto);
+  @Auth("admin")
+  @HttpCode(201)
+  @ApiCreatedResponse({ type: Categories })
+  @ApiBody({ type: Categories })
+  async create(@Body() categoryDto: Categories) {
+    const created = await this.categoriesService.create(categoryDto);
     return created;
   }
 
   @Get()
-  @ApiOkResponse({ type: CategoriesEntity, isArray: true })
+  @Auth("admin")
+  @ApiOkResponse({ type: Categories, isArray: true })
   @Header("Access-Control-Expose-Headers", "Content-Range")
-  async findMany(
-    @Res() res: Response,
-    @Req() req: Request,
-    @PrismaQuery() prismaQuery: QueryForCategoriesPrisma,
-  ) {
+  @ApiQuery({ name: "categoriesQuery", required: false })
+  async findMany(@Res() res: Response, @UrlToPrismaQuery() prismaQuery: CategoriesPrismaQuery) {
     const { count, data } = await this.categoriesService.findMany(prismaQuery);
     res.header("Content-Range", `${count}`);
     res.send(data);
   }
 
   @Get(":id")
-  @ApiOkResponse({ type: CategoriesEntity })
-  @ApiQuery({ name: "crudQuery", required: false })
-  async findOne(@Param("id") id: string) {
+  @Auth("admin")
+  @ApiOkResponse({ type: Categories })
+  async findOne(@Param("id", ParseIntPipe) id: number) {
     const match = await this.categoriesService.findById(id);
     return match;
   }
 
   @Put(":id")
-  @ApiCreatedResponse({ type: CategoriesEntity })
-  async update(@Param("id") id: string, @Body() createCategoryDto: CreateCategoryDto) {
-    const created = await this.categoriesService.update(+id, createCategoryDto);
+  @Auth("admin")
+  @ApiOkResponse({ type: Categories })
+  @ApiBody({ type: Categories })
+  async update(@Param("id", ParseIntPipe) id: number, @Body() categoryDto: Categories) {
+    const created = await this.categoriesService.update(id, categoryDto);
     return created;
   }
 
   @Delete(":id")
-  @ApiOkResponse({ type: CategoriesEntity })
-  async remove(@Param("id") id: string) {
-    return this.categoriesService.remove(+id);
+  @Auth("admin")
+  @ApiOkResponse({ type: Categories })
+  async remove(@Param("id", ParseIntPipe) id: number) {
+    try {
+      const deleted = await this.categoriesService.remove(id);
+      return deleted;
+    } catch (error) {
+      throw new NotFoundException("User not found");
+    }
   }
 }

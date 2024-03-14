@@ -8,7 +8,7 @@ import { QueryForInvoicesPrisma } from "./invoices.interface";
 import { InvoicesService } from "./invoices.service";
 // import { QueryForInvoicesPrisma } from "./invoices.service.spec";
 
-import { PrismaQuery } from "../prisma/prisma.decorator";
+import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @Controller("invoices")
 export class InvoicesController {
@@ -28,7 +28,7 @@ export class InvoicesController {
   async findMany(
     @Res() res: Response,
     @Req() req: Request,
-    @PrismaQuery() prismaQuery: QueryForInvoicesPrisma,
+    @UrlToPrismaQuery() prismaQuery: QueryForInvoicesPrisma,
   ) {
     const { count, data } = await this.invoicesService.findMany(prismaQuery);
     res.header("Content-Range", `${count}`);
