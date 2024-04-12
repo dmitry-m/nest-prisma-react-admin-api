@@ -17,5 +17,5 @@ export class User extends BaseEntity {
   public role: string;
 
   @Column("boolean", { default: false, name: "is_admin" })
-  public isAdmin: boolean;
+  public is_admin: boolean;
 }

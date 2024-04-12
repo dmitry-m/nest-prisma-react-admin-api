@@ -33,7 +33,6 @@ export class AuthService {
   }
 
   public async validateUser({ username, password }: AuthDto): Promise<User> {
-    console.log({ username, password });
     const user: User = await this.userService.getByEmail(username);
     if (!user) return null;
 
@@ -60,8 +59,6 @@ export class AuthService {
   }
 
   public async reNewAuth(refreshToken: string) {
-    console.log("reNewAuth");
-
     const { id }: User = await this.jwtService.verifyAsync(refreshToken);
     const user = await this.userService.getById(id);
 

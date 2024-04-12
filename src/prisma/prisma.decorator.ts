@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus } from "@nestjs/common";
 import { Request } from "express";
 
-type FilterValue = number | string | Date | FilterMap;
+type FilterValue = number | string | Date | { [key: string]: FilterValue };
 
 interface FilterMap {
   [key: string]: FilterValue;
@@ -59,8 +59,6 @@ export const UrlToPrismaQuery = createParamDecorator((data: unknown, ctx: Execut
 
           if (sign === "gte" || sign === "gt" || sign === "lt" || sign === "lte") {
             const slicedKey = keyStrings.slice(0, -1).join("_");
-            console.log({ slicedKey });
-            console.log({ filterValue });
             if (typeof filterValue === "string") {
               if (slicedKey === "date" || slicedKey === "last_seen" || slicedKey === "first_seen") {
                 filterValue = new Date(filterValue);
@@ -68,7 +66,10 @@ export const UrlToPrismaQuery = createParamDecorator((data: unknown, ctx: Execut
                 filterValue = returnNumIfValid(filterValue);
               }
             }
-            where[slicedKey] = { [sign]: filterValue };
+            where[slicedKey] =
+              typeof where[slicedKey] === "object"
+                ? { ...(where[slicedKey] as object), [sign]: filterValue }
+                : { [sign]: filterValue };
           } else if (Array.isArray(filterValue)) {
             where[key] = { in: filterValue };
           } else if (key === "status") {
@@ -82,7 +83,6 @@ export const UrlToPrismaQuery = createParamDecorator((data: unknown, ctx: Execut
           }
         }
       }
-
       prismaQuery = { ...prismaQuery, where };
     } catch (error) {
       throw new HttpException(

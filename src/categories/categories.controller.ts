@@ -11,6 +11,7 @@ import {
   HttpCode,
   ParseIntPipe,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -20,11 +21,14 @@ import {
   ApiTags,
   ApiCreatedResponse,
 } from "@nestjs/swagger";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Response } from "express";
 
+import { CategoryEntity } from "./categories.entity";
 import { CategoriesPrismaQuery } from "./categories.interface";
 import { CategoriesService } from "./categories.service";
-import { Categories } from "./dto/categories";
+import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 import { Auth } from "../auth/decorators/auth.decorator";
 import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
@@ -38,16 +42,23 @@ export class CategoriesController {
   @Post()
   @Auth("admin")
   @HttpCode(201)
-  @ApiCreatedResponse({ type: Categories })
-  @ApiBody({ type: Categories })
-  async create(@Body() categoryDto: Categories) {
-    const created = await this.categoriesService.create(categoryDto);
-    return created;
+  @ApiCreatedResponse({ type: CategoryEntity })
+  @ApiBody({ type: CreateCategoryDto })
+  async create(@Body() categoryDto: CreateCategoryDto) {
+    try {
+      const created = await this.categoriesService.create(categoryDto);
+      return created;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new ConflictException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+      }
+      throw error;
+    }
   }
 
   @Get()
   @Auth("admin")
-  @ApiOkResponse({ type: Categories, isArray: true })
+  @ApiOkResponse({ type: CategoryEntity, isArray: true })
   @Header("Access-Control-Expose-Headers", "Content-Range")
   @ApiQuery({ name: "categoriesQuery", required: false })
   async findMany(@Res() res: Response, @UrlToPrismaQuery() prismaQuery: CategoriesPrismaQuery) {
@@ -58,7 +69,7 @@ export class CategoriesController {
 
   @Get(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: Categories })
+  @ApiOkResponse({ type: CategoryEntity })
   async findOne(@Param("id", ParseIntPipe) id: number) {
     const match = await this.categoriesService.findById(id);
     return match;
@@ -66,16 +77,23 @@ export class CategoriesController {
 
   @Put(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: Categories })
-  @ApiBody({ type: Categories })
-  async update(@Param("id", ParseIntPipe) id: number, @Body() categoryDto: Categories) {
-    const created = await this.categoriesService.update(id, categoryDto);
-    return created;
+  @ApiOkResponse({ type: CategoryEntity })
+  @ApiBody({ type: UpdateCategoryDto })
+  async update(@Param("id", ParseIntPipe) id: number, @Body() categoryDto: UpdateCategoryDto) {
+    try {
+      const updated = await this.categoriesService.update(id, categoryDto);
+      return updated;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new NotFoundException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+      }
+      throw error;
+    }
   }
 
   @Delete(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: Categories })
+  @ApiOkResponse({ type: CategoryEntity })
   async remove(@Param("id", ParseIntPipe) id: number) {
     try {
       const deleted = await this.categoriesService.remove(id);

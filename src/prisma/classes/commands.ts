@@ -8,11 +8,11 @@ export class Commands {
   @ApiProperty({ type: Number })
   id: number;
 
-  @ApiPropertyOptional({ type: String })
-  reference?: string;
+  @ApiProperty({ type: String })
+  reference: string;
 
-  @ApiProperty({ type: Date })
-  date: Date;
+  @ApiPropertyOptional({ type: Date })
+  date?: Date;
 
   @ApiProperty({ type: Number })
   customer_id: number;
@@ -20,8 +20,8 @@ export class Commands {
   @ApiProperty({ type: () => Customers })
   customer: Customers;
 
-  @ApiPropertyOptional({ type: Object })
-  basket?: object;
+  @ApiProperty({ type: Object })
+  basket: object;
 
   @ApiProperty({ type: Number })
   total_ex_taxes: number;
@@ -45,7 +45,7 @@ export class Commands {
   returned: boolean;
 
   @ApiPropertyOptional({ type: () => Invoices })
-  invoice?: Invoices;
+  Invoices?: Invoices;
 
   @ApiProperty({ isArray: true, type: () => Reviews })
   Reviews: Reviews[];

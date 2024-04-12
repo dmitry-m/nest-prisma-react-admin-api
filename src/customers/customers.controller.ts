@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   NotFoundException,
   ConflictException,
+  Query,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -24,14 +25,13 @@ import {
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Response } from "express";
 
-import { CustomerEntity, CustomersPrismaQuery } from "./customers.interface";
+import { CustomerEntity } from "./customers.entity";
+import { CustomersPrismaQuery } from "./customers.interface";
 import { CustomersService } from "./customers.service";
-import { CreateCustomerDto } from "./dto/create-user.dto";
-import { CustomersResponse } from "./dto/customers";
-import { UpdateCustomerDto } from "./dto/update-user.dto";
+import { CreateCustomerDto } from "./dto/create-customer.dto";
+import { UpdateCustomerDto } from "./dto/update-customer.dto";
 
 import { Auth } from "../auth/decorators/auth.decorator";
-import { Customers } from "../prisma/classes/customers";
 import { UrlToPrismaQuery } from "../prisma/prisma.decorator";
 
 @ApiBearerAuth()
@@ -51,7 +51,7 @@ export class CustomersController {
       return created;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        throw new ConflictException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+        throw new ConflictException(error.message.split(/\n/).pop());
       }
       throw error;
     }
@@ -59,7 +59,7 @@ export class CustomersController {
 
   @Get()
   @Auth("admin")
-  @ApiOkResponse({ type: Customers, isArray: true })
+  @ApiOkResponse({ type: CustomerEntity, isArray: true })
   @Header("Access-Control-Expose-Headers", "Content-Range")
   @ApiQuery({ name: "customersQuery", required: false })
   async findMany(@Res() res: Response, @UrlToPrismaQuery() prismaQuery: CustomersPrismaQuery) {
@@ -70,15 +70,17 @@ export class CustomersController {
 
   @Get(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: Customers })
+  @ApiOkResponse({ type: CustomerEntity })
   async findOne(@Param("id", ParseIntPipe) id: number) {
     const match = await this.customersService.findById(id);
+    if (!match) throw new NotFoundException("Customer not found");
+
     return match;
   }
 
   @Put(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: CustomersResponse })
+  @ApiOkResponse({ type: CustomerEntity })
   @ApiBody({ type: UpdateCustomerDto })
   async update(@Param("id", ParseIntPipe) id: number, @Body() customerDto: UpdateCustomerDto) {
     try {
@@ -86,7 +88,8 @@ export class CustomersController {
       return updated;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        throw new NotFoundException(error.message.replace(/(\r\n|\n|\r)/gm, ""));
+        const errorMessage = error.message.split(/[ \r\n]/).pop();
+        throw new NotFoundException(errorMessage);
       }
       throw error;
     }
@@ -94,13 +97,13 @@ export class CustomersController {
 
   @Delete(":id")
   @Auth("admin")
-  @ApiOkResponse({ type: CustomersResponse })
+  @ApiOkResponse({ type: CustomerEntity })
   async remove(@Param("id", ParseIntPipe) id: number) {
     try {
       const deleted = await this.customersService.remove(id);
       return deleted;
     } catch (error) {
-      throw new NotFoundException("User not found");
+      throw new NotFoundException("Customer not found");
     }
   }
 }

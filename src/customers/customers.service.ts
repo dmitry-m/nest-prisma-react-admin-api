@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
 import { CustomersPrismaQuery } from "./customers.interface";
-import { CreateCustomerDto } from "./dto/create-user.dto";
-import { UpdateCustomerDto } from "./dto/update-user.dto";
+import { CreateCustomerDto } from "./dto/create-customer.dto";
+import { UpdateCustomerDto } from "./dto/update-customer.dto";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -20,15 +20,14 @@ export class CustomersService {
 
     if (prismaQuery.where.search) {
       const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
+
       customersQuery.where = {
         ...prismaWhere,
         OR: [
-          { last_name: { contains: search, mode: "insensitive" } },
-          { last_name: { in: search.split(" "), mode: "insensitive" } },
-
-          { first_name: { contains: search, mode: "insensitive" } },
-          { first_name: { in: search.split(" "), mode: "insensitive" } },
-        ],
+          ...searchArray.map((word) => ({ last_name: { contains: word, mode: "insensitive" } })),
+          ...searchArray.map((word) => ({ first_name: { contains: word, mode: "insensitive" } })),
+        ] as Prisma.CustomersWhereInput[],
       };
     }
 

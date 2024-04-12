@@ -9,10 +9,10 @@ CREATE TABLE "Users" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "fullName" TEXT,
+    "name" TEXT,
     "avatar" TEXT,
     "role" TEXT DEFAULT 'user',
-    "isAdmin" BOOLEAN DEFAULT false,
+    "is_admin" BOOLEAN DEFAULT false,
 
     CONSTRAINT "Users_pkey" PRIMARY KEY ("id")
 );
@@ -45,7 +45,7 @@ CREATE TABLE "Customers" (
 -- CreateTable
 CREATE TABLE "Categories" (
     "id" SERIAL NOT NULL,
-    "name" TEXT,
+    "name" TEXT NOT NULL,
 
     CONSTRAINT "Categories_pkey" PRIMARY KEY ("id")
 );
@@ -54,15 +54,15 @@ CREATE TABLE "Categories" (
 CREATE TABLE "Products" (
     "id" SERIAL NOT NULL,
     "category_id" INTEGER NOT NULL,
-    "reference" TEXT,
+    "reference" TEXT NOT NULL,
     "width" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,
     "price" INTEGER NOT NULL,
-    "thumbnail" TEXT,
-    "image" TEXT,
-    "description" TEXT,
+    "thumbnail" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "description" TEXT DEFAULT '',
     "stock" INTEGER NOT NULL,
-    "sales" INTEGER NOT NULL,
+    "sales" INTEGER DEFAULT 0,
 
     CONSTRAINT "Products_pkey" PRIMARY KEY ("id")
 );
@@ -70,17 +70,17 @@ CREATE TABLE "Products" (
 -- CreateTable
 CREATE TABLE "Commands" (
     "id" SERIAL NOT NULL,
-    "reference" TEXT,
-    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reference" TEXT NOT NULL,
+    "date" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "customer_id" INTEGER NOT NULL,
-    "basket" JSONB,
+    "basket" JSONB NOT NULL,
     "total_ex_taxes" INTEGER NOT NULL,
     "delivery_fees" INTEGER NOT NULL,
     "tax_rate" INTEGER NOT NULL,
     "taxes" INTEGER NOT NULL,
     "total" INTEGER NOT NULL,
     "status" "CommandsStatus" NOT NULL DEFAULT 'ORDERED',
-    "returned" BOOLEAN NOT NULL,
+    "returned" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Commands_pkey" PRIMARY KEY ("id")
 );
@@ -109,7 +109,7 @@ CREATE TABLE "Reviews" (
     "product_id" INTEGER NOT NULL,
     "customer_id" INTEGER NOT NULL,
     "rating" INTEGER NOT NULL,
-    "comment" TEXT,
+    "comment" TEXT NOT NULL,
 
     CONSTRAINT "Reviews_pkey" PRIMARY KEY ("id")
 );

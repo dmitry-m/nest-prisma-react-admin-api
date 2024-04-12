@@ -11,7 +11,7 @@ export class Users {
   password: string;
 
   @ApiPropertyOptional({ type: String })
-  fullName?: string;
+  name?: string;
 
   @ApiPropertyOptional({ type: String })
   avatar?: string;
@@ -20,5 +20,5 @@ export class Users {
   role?: string = "user";
 
   @ApiPropertyOptional({ type: Boolean })
-  isAdmin?: boolean;
+  is_admin?: boolean;
 }

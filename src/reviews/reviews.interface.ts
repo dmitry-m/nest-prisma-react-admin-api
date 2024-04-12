@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 
-export interface QueryForReviewsPrisma extends Prisma.ReviewsFindManyArgs {
+export interface ReviewsPrismaQuery extends Prisma.ReviewsFindManyArgs {
   where: Prisma.ReviewsWhereInput & {
-    q?: Prisma.StringNullableFilter<"Reviews">;
+    search?: string;
   };
   orderBy: Prisma.ReviewsOrderByWithRelationInput & { review_id: string }[];
 }

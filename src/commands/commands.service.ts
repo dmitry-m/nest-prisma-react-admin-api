@@ -1,7 +1,8 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
-import { QueryForCommandsPrisma } from "./commands.interface";
+import { CommandsPrismaQuery } from "./commands.interface";
+import { CreateCommandDto } from "./dto/create-command.dto";
 import { UpdateCommandDto } from "./dto/update-command.dto";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -10,14 +11,25 @@ import { PrismaService } from "../prisma/prisma.service";
 export class CommandsService {
   constructor(private prismaService: PrismaService) {}
 
-  async findMany(prismaQuery: QueryForCommandsPrisma) {
+  public async create(createCommandDto: CreateCommandDto) {
+    return this.prismaService.commands.create({ data: createCommandDto });
+  }
+
+  async findMany(prismaQuery: CommandsPrismaQuery) {
     const commandsQuery: Prisma.CommandsFindManyArgs = prismaQuery;
 
-    if (prismaQuery.where.q) {
-      const { q, ...prismaWhere } = prismaQuery.where;
-      commandsQuery.where = { ...prismaWhere, reference: q };
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
+
+      commandsQuery.where = {
+        ...prismaWhere,
+        OR: [
+          ...searchArray.map((word) => ({ reference: { contains: word, mode: "insensitive" } })),
+        ] as Prisma.CommandsWhereInput[],
+      };
     }
-    console.log({ where: commandsQuery.where });
+
     const [count, data] = await this.prismaService.$transaction([
       this.prismaService.commands.count({ where: commandsQuery.where }),
       this.prismaService.commands.findMany(commandsQuery),
@@ -26,18 +38,22 @@ export class CommandsService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.commands.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;
   }
 
-  async update(id: number, updateCommandsDto: UpdateCommandDto) {
+  async update(id: number, updateCommandDto: UpdateCommandDto) {
     return this.prismaService.commands.update({
       where: { id },
-      data: updateCommandsDto,
+      data: updateCommandDto,
     });
+  }
+
+  remove(id: number) {
+    return this.prismaService.commands.delete({ where: { id } });
   }
 }

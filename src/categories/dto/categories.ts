@@ -8,7 +8,7 @@ export class Categories {
   id: number;
 
   @ApiPropertyOptional({ type: String })
-  name?: string;
+  name: string;
 
   @ApiProperty({ isArray: true, type: () => Products })
   products: Prisma.ProductsCreateNestedManyWithoutCategoryInput;

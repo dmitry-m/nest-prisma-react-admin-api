@@ -18,13 +18,13 @@ async function bootstrap(): Promise<void> {
 
   app.use(cookieParser());
   app.setGlobalPrefix("api");
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.setBaseViewsDir(join(__dirname, "../views"));
   app.setViewEngine("pug");
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle("Posters gallery")
-    .setDescription("The posters gallery")
+    .setTitle("Posters shop")
+    .setDescription("The posters shop")
     .setVersion("1.0")
     .addBearerAuth()
     .build();

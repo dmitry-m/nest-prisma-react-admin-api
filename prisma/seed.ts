@@ -19,20 +19,20 @@ const insertUsers = async () => {
   const passwordAlice = await hash("123456", await genSalt(10));
   const userData: Prisma.UsersCreateInput[] = [
     {
-      fullName: "Alice Dow",
+      name: "Alice Dow",
       email: "alice@prisma.io",
       avatar: "https://marmelab.com/posters/avatar-80.jpeg",
       password: passwordAlice,
       role: "admin",
-      isAdmin: true,
+      is_admin: true,
     },
     {
-      fullName: "Nilu Pilu",
+      name: "Nilu Pilu",
       email: "nilu@prisma.io",
       avatar: "https://marmelab.com/posters/avatar-80.jpeg",
       password: passwordNilu,
       role: "user",
-      isAdmin: false,
+      is_admin: false,
     },
   ];
 

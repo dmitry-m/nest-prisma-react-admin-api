@@ -17,10 +17,10 @@ model Users {
   id       Int      @id @default(autoincrement())
   email    String   @unique
   password String
-  fullName String?
+  name     String?
   avatar   String?
   role     String?  @default("user")
-  isAdmin  Boolean? @default(false)
+  is_admin Boolean? @default(false)
 }
 
 model Customers {
@@ -50,7 +50,7 @@ model Customers {
 
 model Categories {
   id       Int        @id @default(autoincrement())
-  name     String?
+  name     String
   products Products[]
 }
 
@@ -58,33 +58,33 @@ model Products {
   id          Int        @id @default(autoincrement())
   category_id Int
   category    Categories @relation(fields: [category_id], references: [id])
-  reference   String?
+  reference   String
   width       Int
   height      Int
   price       Int
-  thumbnail   String?
-  image       String?
-  description String?
+  thumbnail   String
+  image       String
+  description String?    @default("")
   stock       Int
-  sales       Int
+  sales       Int?       @default(0)
   Reviews     Reviews[]
 }
 
 model Commands {
   id             Int            @id @default(autoincrement())
-  reference      String?
-  date           DateTime       @default(now())
+  reference      String
+  date           DateTime?      @default(now())
   customer_id    Int
   customer       Customers      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  basket         Json?
+  basket         Json
   total_ex_taxes Int
   delivery_fees  Int
   tax_rate       Int
   taxes          Int
   total          Int
   status         CommandsStatus @default(ORDERED)
-  returned       Boolean
-  invoice        Invoices?
+  returned       Boolean        @default(false)
+  Invoices       Invoices?
   Reviews        Reviews[]
 }
 
@@ -113,7 +113,7 @@ model Reviews {
   customer_id Int          @unique
   customer    Customers    @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   rating      Int
-  comment     String?
+  comment     String
 }
 
 enum ReviewStatus {

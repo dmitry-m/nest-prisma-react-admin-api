@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
-import { QueryForProductsPrisma } from "./products.interface";
+import { ProductPrismaQuery } from "./products.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -15,16 +15,20 @@ export class ProductsService {
     return this.prismaService.products.create({ data: createProductDto });
   }
 
-  async findMany(prismaQuery: QueryForProductsPrisma) {
+  async findMany(prismaQuery: ProductPrismaQuery) {
     const productsQuery: Prisma.ProductsFindManyArgs = prismaQuery;
 
-    // if (prismaQuery.where.q) {
-    //   const { q, ...prismaWhere } = prismaQuery.where;
-    //   productsQuery.where = { ...prismaWhere, OR: [{ last_name: q }, { first_name: q }] };
-    // }
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
 
-    if (prismaQuery.orderBy[0]?.product_id) {
-      productsQuery.orderBy[0] = { id: prismaQuery.orderBy[0].product_id };
+      productsQuery.where = {
+        ...prismaWhere,
+        OR: [
+          ...searchArray.map((word) => ({ reference: { contains: word, mode: "insensitive" } })),
+          ...searchArray.map((word) => ({ description: { contains: word, mode: "insensitive" } })),
+        ] as Prisma.ProductsWhereInput[],
+      };
     }
 
     const [count, data] = await this.prismaService.$transaction([
@@ -35,9 +39,9 @@ export class ProductsService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.products.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;

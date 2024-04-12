@@ -7,5 +7,5 @@ export class UpdateDto {
   // @IsString()
   // password?: string;
 
-  isAdmin?: boolean;
+  is_admin?: boolean;
 }

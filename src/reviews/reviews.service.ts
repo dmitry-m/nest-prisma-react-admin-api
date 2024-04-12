@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { CreateReviewDto } from "./dto/create-reviews.dto";
 import { UpdateReviewDto } from "./dto/update-reviews.dto";
-import { QueryForReviewsPrisma } from "./reviews.interface";
+import { ReviewsPrismaQuery } from "./reviews.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -17,16 +17,17 @@ export class ReviewsService {
     });
   }
 
-  async findMany(prismaQuery: QueryForReviewsPrisma) {
+  async findMany(prismaQuery: ReviewsPrismaQuery) {
     const reviewsQuery: Prisma.ReviewsFindManyArgs = prismaQuery;
 
-    if (prismaQuery.where.q) {
-      const { q, ...prismaWhere } = prismaQuery.where;
-      reviewsQuery.where = { ...prismaWhere, comment: q };
-    }
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
 
-    if (prismaQuery.orderBy[0]?.review_id) {
-      reviewsQuery.orderBy[0] = { id: prismaQuery.orderBy[0].review_id };
+      reviewsQuery.where = {
+        ...prismaWhere,
+        OR: searchArray.map((word) => ({ comment: { contains: word, mode: "insensitive" } })),
+      };
     }
 
     const [count, data] = await this.prismaService.$transaction([

@@ -1,3 +1,3 @@
-import { Prisma } from "@prisma/client";
+import { CreateCommandDto } from "./create-command.dto";
 
-export type UpdateCommandDto = Prisma.CommandsUpdateInput;
+export class UpdateCommandDto extends CreateCommandDto {}

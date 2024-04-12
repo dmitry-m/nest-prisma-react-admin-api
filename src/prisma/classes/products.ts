@@ -12,8 +12,8 @@ export class Products {
   @ApiProperty({ type: () => Categories })
   category: Categories;
 
-  @ApiPropertyOptional({ type: String })
-  reference?: string;
+  @ApiProperty({ type: String })
+  reference: string;
 
   @ApiProperty({ type: Number })
   width: number;
@@ -24,11 +24,11 @@ export class Products {
   @ApiProperty({ type: Number })
   price: number;
 
-  @ApiPropertyOptional({ type: String })
-  thumbnail?: string;
+  @ApiProperty({ type: String })
+  thumbnail: string;
 
-  @ApiPropertyOptional({ type: String })
-  image?: string;
+  @ApiProperty({ type: String })
+  image: string;
 
   @ApiPropertyOptional({ type: String })
   description?: string;
@@ -36,8 +36,8 @@ export class Products {
   @ApiProperty({ type: Number })
   stock: number;
 
-  @ApiProperty({ type: Number })
-  sales: number;
+  @ApiPropertyOptional({ type: Number })
+  sales?: number;
 
   @ApiProperty({ isArray: true, type: () => Reviews })
   Reviews: Reviews[];

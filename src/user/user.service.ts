@@ -27,17 +27,17 @@ export class UserService {
     return this.prismaService.users.findFirst({ where: { email } });
   }
 
-  public async create({ email, password }: { email: string; password: string }) {
+  public async create({ password, ...user }: CreateUserDto) {
     const salt = await genSalt(10);
 
     return this.prismaService.users.create({
-      data: { email, password: await hash(password, salt) },
+      data: { ...user, password: await hash(password, salt) },
     });
   }
 
-  async updateProfile(id: number, { isAdmin }: UpdateDto): Promise<User> {
+  async updateProfile(id: number, { is_admin }: UpdateDto): Promise<User> {
     const data = await this.getById(id);
-    data.isAdmin = isAdmin;
+    data.is_admin = is_admin;
 
     return this.prismaService.users.update({ where: { id: data.id }, data });
   }
@@ -66,12 +66,23 @@ export class UserService {
   // }
 
   async findMany(prismaQuery: QueryForUsersPrisma) {
-    console.log({ prismaQuery });
     const usersQuery: Prisma.UsersFindManyArgs = prismaQuery;
 
-    if (prismaQuery.where.q) {
-      const { q, ...prismaWhere } = prismaQuery.where;
-      usersQuery.where = { ...prismaWhere, OR: [{ email: q }, { fullName: q }] };
+    if (prismaQuery.where.search) {
+      const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
+
+      usersQuery.where = {
+        ...prismaWhere,
+        OR: [
+          ...searchArray.map((word) => ({
+            email: { contains: word, mode: "insensitive" },
+          })),
+          ...searchArray.map((word) => ({
+            name: { contains: word, mode: "insensitive" },
+          })),
+        ] as Prisma.UsersWhereInput[],
+      };
     }
 
     const [count, data] = await this.prismaService.$transaction([
@@ -91,9 +102,11 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
+    const salt = await genSalt(10);
+    const { password, ...data } = updateUserDto;
     return this.prismaService.users.update({
       where: { id },
-      data: updateUserDto,
+      data: password ? { ...data, password: await hash(password, salt) } : data,
     });
   }
 

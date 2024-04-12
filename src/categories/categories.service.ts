@@ -2,7 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
 import { CategoriesPrismaQuery } from "./categories.interface";
-import { Categories } from "./dto/categories";
+import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -10,9 +11,8 @@ import { PrismaService } from "../prisma/prisma.service";
 export class CategoriesService {
   constructor(private prismaService: PrismaService) {}
 
-  public async create(createCategoryDto: Categories) {
-    const { id, ...category } = createCategoryDto;
-    return this.prismaService.categories.create({ data: category });
+  public async create(createCategoryDto: CreateCategoryDto) {
+    return this.prismaService.categories.create({ data: createCategoryDto });
   }
 
   async findMany(prismaQuery: CategoriesPrismaQuery) {
@@ -20,8 +20,14 @@ export class CategoriesService {
 
     if (prismaQuery.where.search) {
       const { search, ...prismaWhere } = prismaQuery.where;
+      const searchArray = search.split(" ");
+
       categoriesQuery.where = {
         ...prismaWhere,
+        OR: [
+          ...searchArray.map((word) => ({ last_name: { contains: word, mode: "insensitive" } })),
+          ...searchArray.map((word) => ({ first_name: { contains: word, mode: "insensitive" } })),
+        ] as Prisma.CategoriesWhereInput[],
       };
     }
 
@@ -41,7 +47,7 @@ export class CategoriesService {
     return data;
   }
 
-  async update(id: number, updateCategoryDto: Categories) {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     return this.prismaService.categories.update({
       where: { id },
       data: updateCategoryDto,

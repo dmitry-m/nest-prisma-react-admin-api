@@ -1,3 +1,5 @@
-import { Prisma } from "@prisma/client";
+import { PartialType } from "@nestjs/mapped-types";
 
-export type UpdateReviewDto = Prisma.ReviewsUpdateInput;
+import { CreateReviewDto } from "./create-reviews.dto";
+
+export class UpdateReviewDto extends PartialType(CreateReviewDto) {}

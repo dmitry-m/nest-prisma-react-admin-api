@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate({ id }: { id: number }) {
     const user = await this.usersService.getById(id);
-    delete user.password;
+    if (user) delete user.password;
 
     return user;
   }
