@@ -1,25 +1,35 @@
-FROM node:18-alpine as development
+FROM node:18-alpine As development
+RUN apk update && apk add openssl
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-
-RUN npm install --only=development
-
+COPY prisma ./prisma
 COPY . .
 
-RUN npm run build
+RUN yarn install
+RUN yarn prisma generate
+RUN yarn prisma migrate reset --force
 
-FROM node:18-alpine as production
+FROM development As build
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-
-RUN npm install --only=production
-
+COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY . .
 
-COPY --from=development /usr/src/app/dist ./dist
+RUN yarn run build
 
-CMD ["node", "dist/main"]
+RUN yarn install --production=true && yarn cache clean
+
+FROM build As production
+
+WORKDIR /usr/src/app
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/.env ./
+COPY package*.json ./
+
+CMD [ "node", "dist/src/main.js" ]

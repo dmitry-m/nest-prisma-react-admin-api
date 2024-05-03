@@ -1,18 +1,17 @@
 version: "3.9"
 
 services:
-  nest-api:
+  app:
     container_name: nest-api
     build:
       dockerfile: Dockerfile
       context: .
-      target: production
+      target: development
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
     ports:
       - 2999:2999
-    command: npm run dev
+    command: yarn run dev
     env_file:
       - .env
     networks:
@@ -34,7 +33,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
 networks:
   webnet:
 volumes:

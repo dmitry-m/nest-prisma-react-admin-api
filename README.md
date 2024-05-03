@@ -26,7 +26,23 @@
   
   ## 🔍 Overview
 
-This is a Nest.js project with a comprehensive tree structure, consisting of various directories and files. The project is using TypeScript as the programming language and Prisma for database management.The project's main entry point is the `main.ts` file, which sets up the Nest application and imports the necessary modules. The `src` directory contains all the source code for the application, including controllers, services, entities, and other components.The `prisma` directory contains the Prisma schema and seed data, which are used to manage the application's database. The `data-generator-retail.d.ts` file is a Prisma data generator that generates sample data for the application.The `docker-compose.yml` file is used to set up the application's Docker environment, while the `Dockerfile` is used to build the Docker image for the application. The `nest-cli.json` file is used by the Nest CLI to manage the application's configuration.The `README.md` file contains information about the project, including installation instructions and usage guidelines. The `package.json` file contains metadata about the project, including dependencies and scripts.Overall, this is a well-structured Nest.js project with a clear separation of concerns between the different components and a robust database management system using Prisma
+This is a Nest.js project with a comprehensive tree structure, consisting of various directories and files. The project is using TypeScript as the programming language and Prisma for database management.The project's main entry point is the `main.ts` file, which sets up the Nest application and imports the necessary modules. The `src` directory contains all the source code for the application, including controllers, services, entities, and other components.The `prisma` directory contains the Prisma schema and seed data, which are used to manage the application's database. The `data-generator-retail.d.ts` file is a Prisma data generator that generates sample data for the application.The `docker-compose.yml` file is used to set up the application's Docker environment, while the `Dockerfile` is used to build the Docker image for the application.
+
+---
+
+## 🚀 Getting Started
+
+To get started with this project, follow these steps:<br>
+
+1. Install the dependencies by running `yarn install`.
+2. Rename a `copy.env` file to `.env` and change your environment variables if necessary.
+3. Start the development server by running `yarn run dev` or `docker compose up -d` if necessary to run completely independent application with PostgreSQL database in container.
+4. Access the application by navigating to `http://localhost:2999/api` in your web browser.
+
+Additional steps:<br>
+
+1. Copy and run frontend the application from the git-repository https://github.com/dmitry-m/next-redux-cookies-persist
+2. Start the e2e tests by running `yarn run test:e2e`
 
 ---
 
@@ -582,19 +598,3 @@ The project includes the following features:<br>
 </details>
 
 ---
-
-## 🚀 Getting Started
-
-To get started with this Nest.js project, follow these steps:<br>
-
-1. Install the dependencies by running `yarn` or `npm install`.
-2. Set up the database by running `prisma generate` and `prisma migrate dev`.
-3. Start the application by running `yarn start` or `npm run start`.
-4. Test the application by running `yarn test` or `npm run test`.
-5. Use the API endpoints to interact with the application.
-
-Note: This guide assumes that you have Node.js and Yarn installed on your system. If you don't have them, you can download them from the official websites.
-
----
-
-Generated with ❤️ by [ReadMeAI](https://www.readmeai.co/).
