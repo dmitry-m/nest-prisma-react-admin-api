@@ -106,6 +106,5 @@ export const UrlToPrismaQuery = createParamDecorator((data: unknown, ctx: Execut
     }
   }
 
-  console.log(JSON.stringify(prismaQuery, null, 2));
   return prismaQuery;
 });

@@ -9,7 +9,6 @@ COPY . .
 
 RUN yarn install
 RUN yarn prisma generate
-RUN yarn prisma migrate reset --force
 
 FROM development As build
 
@@ -32,4 +31,4 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/.env ./
 COPY package*.json ./
 
-CMD [ "node", "dist/src/main.js" ]
+CMD [ "yarn", "run", "start:migrate:prod"]

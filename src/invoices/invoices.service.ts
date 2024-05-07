@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { UpdateInvoiceDto } from "./dto/update-invoice.dto";
-import { QueryForInvoicesPrisma } from "./invoices.interface";
+import { InvoicesPrismaQuery } from "./invoices.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -17,7 +17,7 @@ export class InvoicesService {
     });
   }
 
-  async findMany(prismaQuery: QueryForInvoicesPrisma) {
+  async findMany(prismaQuery: InvoicesPrismaQuery) {
     const invoicesQuery: Prisma.InvoicesFindManyArgs = prismaQuery;
 
     const [count, data] = await this.prismaService.$transaction([
@@ -28,9 +28,9 @@ export class InvoicesService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.invoices.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;

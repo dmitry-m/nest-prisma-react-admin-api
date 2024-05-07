@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
-import { CreateReviewDto } from "./dto/create-reviews.dto";
-import { UpdateReviewDto } from "./dto/update-reviews.dto";
+import { CreateReviewDto } from "./dto/create-review.dto";
+import { UpdateReviewDto } from "./dto/update-review.dto";
 import { ReviewsPrismaQuery } from "./reviews.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -38,9 +38,9 @@ export class ReviewsService {
     return { count, data };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const data = await this.prismaService.reviews.findFirst({
-      where: { id: +id },
+      where: { id },
     });
 
     return data;

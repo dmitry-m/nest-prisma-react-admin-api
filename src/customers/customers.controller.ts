@@ -12,7 +12,6 @@ import {
   ParseIntPipe,
   NotFoundException,
   ConflictException,
-  Query,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,

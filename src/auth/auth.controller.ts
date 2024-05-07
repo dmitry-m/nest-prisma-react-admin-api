@@ -11,7 +11,7 @@ import {
   Get,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { ApiOkResponse, ApiBody } from "@nestjs/swagger";
+import { ApiOkResponse, ApiBody, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 
 import { AuthInterface } from "./auth.interface";
@@ -22,6 +22,7 @@ import { LocalAuthGuard } from "./guards/local.guard";
 import { UserParam } from "../user/decorators/user.decorator";
 import { User } from "../user/user.entity";
 
+@ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
   private expires: number;
@@ -91,8 +92,6 @@ export class AuthController {
         expires: new Date(Date.now() + expires),
         httpOnly: true,
       });
-      console.log({ auth });
-      console.log("+++++++++++++++++++++++++++");
       return auth;
     } catch (error) {
       throw new UnauthorizedException("Invalid token or expired");

@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-import { CreateReviewDto } from "./dto/create-reviews.dto";
+import { CreateReviewDto } from "./dto/create-review.dto";
 
-export class ReviewsEntity extends CreateReviewDto {
+export class ReviewEntity extends CreateReviewDto {
   @ApiProperty({ type: Number })
   id: number;
 }

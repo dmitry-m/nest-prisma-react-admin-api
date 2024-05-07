@@ -1,3 +1,5 @@
-import { Prisma } from "@prisma/client";
+import { PartialType } from "@nestjs/mapped-types";
 
-export type UpdateInvoiceDto = Prisma.InvoicesUpdateInput;
+import { CreateInvoiceDto } from "./create-invoice.dto";
+
+export class UpdateInvoiceDto extends PartialType(CreateInvoiceDto) {}
