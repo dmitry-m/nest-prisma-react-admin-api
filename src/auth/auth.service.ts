@@ -1,13 +1,27 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { compare } from "bcryptjs";
+import { compare, genSalt, hash } from "bcryptjs";
 
 import { AuthInterface } from "./auth.interface";
 import { AuthDto } from "./dto/auth.dto";
 
-import { User } from "../user/user.entity";
+import { SafeUserEntity, UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
+// import { UpdatePassword } from "./dto/password.dto";
+
+export function excludeFromList<T, K extends keyof T>(
+  objects: T[],
+  keysToDelete: K[],
+): Omit<T, K>[] {
+  return objects.map((obj) => exclude(obj, keysToDelete)) as Omit<T, K>[];
+}
+
+export function exclude<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
+  ) as Omit<T, K>;
+}
 
 @Injectable()
 export class AuthService {
@@ -32,22 +46,20 @@ export class AuthService {
     return { refreshToken, accessToken };
   }
 
-  public async validateUser({ username, password }: AuthDto): Promise<User> {
-    const user: User = await this.userService.getByEmail(username);
+  public async validateUser({ username, password }: AuthDto): Promise<SafeUserEntity | null> {
+    const user: UserEntity = await this.userService.getByEmail(username);
     if (!user) return null;
 
     const passwordValid = await compare(password, user.password);
-    delete user.password;
 
-    return passwordValid ? user : null;
+    return passwordValid ? exclude(user, ["password"]) : null;
   }
 
-  public async authenticate(user: User): Promise<AuthInterface & { refreshToken: string }> {
+  public async authenticate(user: UserEntity): Promise<AuthInterface & { refreshToken: string }> {
     const { accessToken, refreshToken } = await this.issueJwtTokens(user.id);
-    const { password, ...data } = user;
 
     return {
-      ...data,
+      ...exclude(user, ["password"]),
       accessToken,
       refreshToken,
     };
@@ -59,9 +71,25 @@ export class AuthService {
   }
 
   public async reNewAuth(refreshToken: string) {
-    const { id }: User = await this.jwtService.verifyAsync(refreshToken);
+    const { id }: UserEntity = await this.jwtService.verifyAsync(refreshToken);
     const user = await this.userService.getById(id);
 
     return this.authenticate(user);
   }
+
+  // public async updatePassword(
+  //   id: number,
+  //   { password, newPassword }: UpdatePassword,
+  // ): Promise<UserEntity> {
+  //   const data = await this.userService.getById(id);
+  //   const passwordValid = await compare(password, data.password);
+
+  //   if (!passwordValid) {
+  //     return null;
+  //   }
+
+  //   data.password = await hash(newPassword, await genSalt(10));
+
+  //   return this.userService.update(data.id, data);
+  // }
 }

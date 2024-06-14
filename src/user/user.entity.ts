@@ -1,21 +1,33 @@
-import { Entity, Column } from "typeorm";
+import { IsBoolean, IsEmail, IsString } from "class-validator";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { BaseEntity } from "../entities/baseEntity.entity";
+export class UserEntity extends CreateUserDto {
+  @ApiProperty({ type: Number })
+  id: number;
+}
 
-@Entity("User")
-export class User extends BaseEntity {
-  @Column({ length: 255, unique: true })
-  public email: string;
+export class SafeUserEntity implements Omit<UserEntity, "password"> {
+  @ApiProperty({ type: Number })
+  id: number;
 
-  @Column({ length: 255, select: false })
-  public password: string;
+  @ApiProperty({ type: String })
+  @IsEmail()
+  email: string;
 
-  @Column({ length: 255 })
-  public name?: string;
+  @ApiPropertyOptional({ type: String })
+  @IsString()
+  name?: string;
 
-  @Column({ length: 255 })
-  public role: string;
+  @ApiPropertyOptional({ type: String })
+  @IsString()
+  avatar?: string;
 
-  @Column("boolean", { default: false, name: "is_admin" })
-  public is_admin: boolean;
+  @ApiPropertyOptional({ type: String })
+  @IsString()
+  role?: string = "user";
+
+  @ApiPropertyOptional({ type: Boolean })
+  @IsBoolean()
+  is_admin?: boolean = false;
 }

@@ -1,12 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { compare, genSalt, hash } from "bcryptjs";
+import { genSalt, hash } from "bcryptjs";
 
 import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdatePassword } from "./dto/password.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { UpdateDto } from "./dto/update.dto";
-import { User } from "./user.entity";
 import { QueryForUsersPrisma } from "./user.interface";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -35,35 +32,9 @@ export class UserService {
     });
   }
 
-  async updateProfile(id: number, { is_admin }: UpdateDto): Promise<User> {
-    const data = await this.getById(id);
-    data.is_admin = is_admin;
-
-    return this.prismaService.users.update({ where: { id: data.id }, data });
-  }
-
-  async updatePassword(id: number, { password, newPassword }: UpdatePassword): Promise<User> {
-    const data = await this.getById(id);
-    const passwordValid = await compare(password, data.password);
-
-    if (!passwordValid) {
-      return null;
-    }
-
-    data.password = await hash(newPassword, await genSalt(10));
-
-    return this.prismaService.users.update({ where: { id: data.id }, data });
-  }
-
   async getCount(): Promise<number> {
     return this.prismaService.users.count();
   }
-
-  // public async create(createUserDto: CreateUserDto) {
-  //   return this.prismaService.users.create({
-  //     data: { ...createUserDto },
-  //   });
-  // }
 
   async findMany(prismaQuery: QueryForUsersPrisma) {
     const usersQuery: Prisma.UsersFindManyArgs = prismaQuery;
