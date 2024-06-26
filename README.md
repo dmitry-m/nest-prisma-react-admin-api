@@ -41,7 +41,7 @@ To get started with this project, follow these steps:<br>
 
 Additional steps:<br>
 
-1. Copy and run frontend the application from the git-repository https://github.com/dmitry-m/next-redux-cookies-persist
+1. Copy and run frontend the application from the git-repository https://github.com/dmitry-m/posters-shop-react-admin
 2. Start the e2e tests by running `yarn run test:e2e`
 
 ---
